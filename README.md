@@ -1,10 +1,14 @@
 # Criando diretorio do projeto
+```python
 mkdir cliente_api
 cd cliente_api
+```
 
 # Criando ambiente virtual para os pacotes do projeto
+```python
 virtualenv venv
 . venv/bin/activate  
+```
 
 ### No Windows use
  `env\Scripts\activate`

@@ -29,8 +29,10 @@ django-admin startapp clientes
 ```
 
 # Configurando o settings.py
-## Application definition
+
 ```python
+## Application definition
+
     INSTALLED_APPS = [
         ...
         'rest_framework',
@@ -214,7 +216,7 @@ Vamos criar um arquivo chamado de ```clientes/validadores.py``` onde deixaremos 
 
 ```python
 def validar_cpf(numero_cpf):
-    return if(len(numero_cpf) != 11)
+    return len(numero_cpf) != 11
 ```
 No arquivo ```clientes/serializers.py``` fica dessa forma:
 
@@ -324,8 +326,7 @@ Vamos criar um arquivo chamado ```cliente_api/populando_script.py```
 import os, django
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
-#django.setup()
-django.core()
+django.setup()
 
 from faker import Faker
 from validate_docbr import CPF
@@ -348,7 +349,7 @@ def criando_pessoas(quantidade_de_pessoas):
         p.save()
 
 criando_pessoas(50)
-print('')
+print('executado com sucesso!')
 ```
 
 Podemos agora executar o nosso script:
@@ -371,7 +372,7 @@ Para colocarmos um estilo de paginação que aceita um único número de página
 ```python
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 100
+    'PAGE_SIZE': 10
 }
 ```
 
@@ -391,12 +392,24 @@ Já baixamos o nosso pacote ```pip install django-filter``` agora precisamos ins
 
 A nossa api ainda não realiza uma ordenação dos clientes inseridos na nosso banco de dados, esses ainda estão apenas exibidos pela ordem de inserção. Vamos usar um pouco do pacote instalado anteriormente.
 
+Vamos modificar um pouco mais o nosso arquivo ```core/settings.py```, vamos incrementar a nossa configuração do atributo ```REST_FRAMEWORK``` uma nova linha, não esqueça de colocar a virgula depois das configurações de paginação como é apresentado no código abaixo.
+
+```python
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
+
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'] #novo
+}
+```
+
 Vamos modificar um pouco mais o nosso arquivo ```clientes/views.py```, que ficará dessa forma:
 
 ```python
-from rest_framework import viewsets, filters #novo
+from rest_framework import viewsets, filters
 from clientes.serializers import ClienteSerializer
 from clientes.models import Cliente
+from django_filters.rest_framework import DjangoFilterBackend #novo
 
 class ClientesViewSet(viewsets.ModelViewSet):
     """Listando clientes"""
@@ -404,6 +417,7 @@ class ClientesViewSet(viewsets.ModelViewSet):
     serializer_class = ClienteSerializer
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]#novo
     ordering = ['nome'] #ordenar por nome
+
 ```
 A biblioteca django-filter inclui uma classe ```DjangoFilterBackend``` que suporta filtragem de campo altamente personalizável para framework REST.
 A classe ```OrderingFilter``` oferece suporte à ordenação de resultados controlada por parâmetro de consulta simples.
@@ -422,7 +436,7 @@ class ClientesViewSet(viewsets.ModelViewSet):
     queryset = Cliente.objects.all()
     serializer_class = ClienteSerializer
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter] #novo
-    ordering = ['nome'] #ordenar por nome
+    ordering_fields = ['nome',] #ordenar por nome
     search_fields = ['nome', 'cpf']#buscar por nome e cpf
     filterset_fields = ['ativo']
 ```

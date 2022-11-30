@@ -445,3 +445,117 @@ Você pode definir um atributo ```filterset_fields``` na exibição, ou viewset,
 
 # Deploy 
 
+https://www.heroku.com/python
+
+Inicialmente para utilizarmos o heroku precisamos instalar o CLI, que é a interface de linha de comando Heroku (CLI), que permite criar e gerenciar aplicativos Heroku diretamente do terminal. É uma parte essencial do uso do Heroku. Você pode ver a forma de instalar e usar no link: ```https://devcenter.heroku.com/articles/heroku-cli```. 
+
+Instalando no Ubuntu e Debian:
+```python
+curl https://cli-assets.heroku.com/install-ubuntu.sh | sh
+```
+Para verificar a versão é so executar o comando ```heroku --version```.
+
+## Comece a usar a CLI do Heroku
+Depois de instalar a CLI, execute o comando heroku login. Digite qualquer tecla para acessar seu navegador da Web e concluir o login. A CLI faz login automaticamente.
+
+```python
+heroku login 
+```
+
+No nosso projeto precisamos instalar uma biblioteca do heroku com o seguinte comando:
+
+```python
+pip install django-heroku 
+```
+
+Ao executar o comando acima o meu sistema apresentou um pequeno problema com a biblioteca ```psycopg2```, para solucinar o problema de configuração foi instalado os pacotes abaixo.
+
+```python
+pip install psycopg2-binary #ao projeto
+sudo apt-get install --reinstall libpq-dev #no computador
+```
+
+Depois da biblioteca do ```django-heroku``` ser instalada podemos configurar o nosso arquivo ```settings.py.```. Ao arquivo vamos acrescentar a seguinte linha.
+
+```python
+import django_heroku #no inicio
+django_heroku.settings(locals()) #no fim
+```
+
+## Instalando o Gunicorn
+Depois disso vamos instalar o gunicorn ao nosso projeto. Gunicorn 'Green Unicorn' é um servidor Python WSGI HTTP para UNIX. É um modelo pré-fork worker. O servidor Gunicorn é amplamente compatível com vários frameworks da web, implementado de forma simples, leve nos recursos do servidor e bastante rápido. ``` https://gunicorn.org/```
+
+```python
+pip install gunicorn
+pip freeze > requirements.txt #para atualizar no requirements.txt
+```
+
+Vamos agora criar um arquivo para configuramos o nosso projeto para que ele possa utilizar os recursos que o Gunicorn nos disponibiliza. Em ``` clientes_api/Procfile```. 
+
+```python
+web: gunicorn core.wsgi
+```
+Desta forma estamos vinculando as responsabilidades de servidor para o gunicorn. 
+
+## Instalar o Git
+
+Para que você possa instalar o git na sua máquina você pode pegar mais informação da sua plataforma no site a seguir: ```https://git-scm.com/```.
+
+No seu projeto iremos acionar os seguinte comandos do git, para que possamos realizar o deploy da nossa aplicação no heroku.
+
+```python
+git init 
+git add .
+git commit -m "primeiro commit do projeto"
+heroku login #caso nao tenha realizado o login ainda
+heroku git:remote -a fgsclientes
+git push heroku master
+```
+
+
+No terminal mostrará o link do site criado pelo heroku, no nosso caso aqui foi ```https://fgsclientes.herokuapp.com/```
+```python
+#sainda no terminal, mostra que foi feita vinculação entre git local e remoto
+set git remote heroku to https://git.heroku.com/fgsclientes.git
+```
+Ao irmos ao site termos um erro on fala que as nossas tabelas não foram criadas. 
+
+```python 
+ProgrammingError at /clientes/
+relation "clientes_cliente" does not exist
+LINE 1: SELECT COUNT(*) AS "__count" FROM "clientes_cliente"
+```
+Vamos executar alguns comandos para criamos nossas tabelas resolvermos esse problema.
+
+```python 
+heroku run python manage.py migrate
+```
+
+```python 
+heroku run python manage.py createsuperuser
+```
+
+Essas modificações foram realizadas apenas localmente, precisamos atualizar o nosso código também no heroku. Para isso iremos executar os seguintes comandos. 
+
+Faça uma modificação para que os clientes da api precisem realizar uma autenticação antes de visualizar as informações dos clientes. 
+
+```python
+git status
+git add .
+git commit -m "segundo commit atualização na autenticação"
+git push heroku master
+```
+
+Para populamos nosso banco de dados do nosso sistema online é so executarmos o script ```populando_script.py```
+
+```python
+heroku run  python populando_script.py 
+```
+
+https://www.elephantsql.com/
+
+https://www.elephantsql.com/docs/pgadmin.html
+
+https://www.pgadmin.org/download/
+
+https://www.pgadmin.org/download/pgadmin-4-apt/
